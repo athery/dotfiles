@@ -14,6 +14,7 @@ alias vi="nvim"
 alias vim="nvim"
 
 # git aliases
+[ -f /usr/share/bash-completion/completions/git ] && source /usr/share/bash-completion/completions/git
 alias ga="git add"
 __git_complete ga _git_add
 alias gaa="git add -A"

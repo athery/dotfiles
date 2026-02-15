@@ -104,8 +104,18 @@ sync_dotfiles_repo() {
     info "Repo dotfiles absent → clone dans $DOTFILES_DIR"
     run "git clone '$REPO_URL' '$DOTFILES_DIR'"
   else
-    info "Repo dotfiles présent → pull (ff-only) dans $DOTFILES_DIR"
-    run "git -C '$DOTFILES_DIR' pull --ff-only"
+    info "Repo dotfiles présent → fetch + fast-forward"
+
+    run "git -C '$DOTFILES_DIR' fetch"
+
+    # Si la branche a un upstream
+    if git -C "$DOTFILES_DIR" rev-parse --abbrev-ref --symbolic-full-name @{u} >/dev/null 2>&1; then
+      run "git -C '$DOTFILES_DIR' merge --ff-only"
+    else
+      warn "Aucun upstream configuré pour la branche courante."
+      warn "Skipping auto-merge. Configure avec:"
+      warn "  git branch --set-upstream-to=origin/<branch>"
+    fi
   fi
 }
 
