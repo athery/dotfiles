@@ -62,18 +62,16 @@ success() { printf "\033[1;32m[SUCCESS]\033[0m %s\n" "$1"; }
 warn()    { printf "\033[1;33m[WARN]\033[0m %s\n" "$1"; }
 error()   { printf "\033[1;31m[ERROR]\033[0m %s\n" "$1" >&2; }
 
-need_cmd() {
-  command -v "$1" >/dev/null 2>&1
-}
-
 run() {
-  # Lance une commande ou l’affiche seulement en dry-run
   if [[ "$DRY_RUN" -eq 1 ]]; then
-    printf "\033[2m[DRY]\033[0m %s\n" "$*"
+    printf "\033[2m[DRY]\033[0m "
+    printf "%q " "$@"
+    printf "\n"
   else
-    eval "$@"
+    "$@"
   fi
 }
+
 
 #####################################
 # Setup system & deps
@@ -81,13 +79,13 @@ run() {
 
 update_system() {
   info "Mise à jour système (pacman -Syu)"
-  run "sudo pacman -Syu --noconfirm"
+  run sudo pacman -Syu --noconfirm
 }
 
 install_dependencies() {
   info "Installation dépendances (git, stow)"
   # --needed évite de réinstaller
-  run "sudo pacman -S --needed --noconfirm git stow"
+  run sudo pacman -S --needed --noconfirm git stow
 }
 
 #####################################
@@ -102,15 +100,15 @@ sync_dotfiles_repo() {
 
   if [[ ! -d "$DOTFILES_DIR/.git" ]]; then
     info "Repo dotfiles absent → clone dans $DOTFILES_DIR"
-    run "git clone '$REPO_URL' '$DOTFILES_DIR'"
+    run git clone "$REPO_URL" "$DOTFILES_DIR"
   else
     info "Repo dotfiles présent → fetch + fast-forward"
 
-    run "git -C '$DOTFILES_DIR' fetch"
+    run git -C "$DOTFILES_DIR" fetch
 
     # Si la branche a un upstream
     if git -C "$DOTFILES_DIR" rev-parse --abbrev-ref --symbolic-full-name @{u} >/dev/null 2>&1; then
-      run "git -C '$DOTFILES_DIR' merge --ff-only"
+      run git -C "$DOTFILES_DIR" merge --ff-only
     else
       warn "Aucun upstream configuré pour la branche courante."
       warn "Skipping auto-merge. Configure avec:"
@@ -132,6 +130,7 @@ discover_packages_if_empty() {
   mapfile -t PACKAGES < <(
     find "$DOTFILES_DIR" -mindepth 1 -maxdepth 1 -type d -printf '%f\n' \
     | grep -vE '^\.' \
+    | grep -vE '^(scripts|docs)$' \
     | sort
   )
   if [[ "${#PACKAGES[@]}" -eq 0 ]]; then
@@ -177,9 +176,9 @@ backup_existing_target() {
   local bkp
   bkp="$(backup_path_for "$target")"
 
-  run "mkdir -p '$(dirname "$bkp")'"
+  run mkdir -p "$(dirname "$bkp")"
   info "Backup (miroir): $target -> $bkp"
-  run "mv '$target' '$bkp'"
+  run mv "$target" "$bkp"
 }
 
 # Liste les cibles que stow va linker (d'après stow -n -v)
@@ -207,9 +206,9 @@ list_stow_link_targets() {
 
   # 2) Fallback: on déduit les cibles à partir du contenu du package
   # On liste tous les fichiers et dossiers (hors .gitkeep etc si besoin)
-  # et on renvoie leurs chemins relatifs depuis le dossier package.
+  # IMPORTANT: on ne liste PAS les dossiers, sinon on risque de backuper ~/.config ou ~/.ssh
   find "$DOTFILES_DIR/$pkg" -mindepth 1 \
-    \( -type f -o -type d \) \
+    \( -type f -o -type l \) \
     -printf '%P\n'
 }
 
@@ -225,6 +224,7 @@ detect_conflicts() {
     exit 1
   fi
 
+  local out code target rel
   local any_conflict=0
   cd "$DOTFILES_DIR"
 
@@ -275,7 +275,7 @@ detect_conflicts() {
 
 stow_packages() {
   info "Application stow (backup miroir si nécessaire)"
-  run "mkdir -p '$BACKUP_DIR/$RUN_ID'"
+  run mkdir -p "$BACKUP_DIR/$RUN_ID"
 
   cd "$DOTFILES_DIR"
 
@@ -309,6 +309,39 @@ stow_packages() {
 }
 
 #####################################
+# Crée le config ssh locale si besoin
+#####################################
+
+ensure_ssh_local_config() {
+  local SSH_DIR="$HOME/.ssh"
+  local SSH_LOCAL="$SSH_DIR/config.local"
+
+  mkdir -p "$SSH_DIR"
+  chmod 700 "$SSH_DIR"
+
+  if [[ ! -f "$SSH_LOCAL" ]]; then
+    info "Creating empty SSH config.local"
+    run mkdir -p "$SSH_DIR"
+    run chmod 700 "$SSH_DIR"
+    if [[ "$DRY_RUN" -eq 1 ]]; then
+      return 0
+    fi
+    cat > "$SSH_LOCAL" <<'EOF'
+# Private SSH hosts
+# Example:
+# Host client-prod
+#   HostName 1.2.3.4
+#   User wwwdata
+EOF
+    chmod 600 "$SSH_LOCAL"
+  else
+    info "SSH config.local already exists"
+  fi
+
+}
+
+
+#####################################
 # Main
 #####################################
 
@@ -330,11 +363,15 @@ main() {
 
   sync_dotfiles_repo
 
+  export DRY_RUN
+  "$DOTFILES_DIR/scripts/install_packages.sh"
+
   discover_packages_if_empty
   validate_packages_exist
 
   detect_conflicts
   stow_packages
+  ensure_ssh_local_config
 
   if [[ "$DRY_RUN" -eq 1 ]]; then
     success "Dry-run terminé ✅ (aucun changement effectué)"
