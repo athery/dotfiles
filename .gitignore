@@ -1,0 +1,6 @@
+.ssh/config.local
+.ssh/id_*
+.ssh/*.pem
+.ssh/*.pub
+.ssh/*_rsa*
+.ssh/known_hosts
