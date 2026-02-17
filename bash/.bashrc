@@ -12,6 +12,11 @@ alias s="source ~/.bashrc"
 alias top="btop"
 alias vi="nvim"
 alias vim="nvim"
+alias ll="ls -al"
+# "de web www-data" par exemple
+function de() {
+  docker exec -ti -u "$2" "$1" bash
+}
 
 # git aliases
 [ -f /usr/share/bash-completion/completions/git ] && source /usr/share/bash-completion/completions/git
