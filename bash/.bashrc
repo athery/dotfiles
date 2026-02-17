@@ -5,6 +5,14 @@
 # (don't mess with these directly, just overwrite them here!)
 source ~/.local/share/omarchy/default/bash/rc
 
+# Load private secrets if present
+if [ -f "$HOME/.secrets/global.env" ]; then
+  source "$HOME/.secrets/global.env"
+fi
+
+#theming
+export BAT_THEME="Catppuccin Macchiato"
+
 # Add your own exports, aliases, and functions here.
 #
 # Make an alias for invoking commands you use constantly

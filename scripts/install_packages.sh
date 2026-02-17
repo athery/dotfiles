@@ -19,39 +19,93 @@ run() {
 
 need_cmd() { command -v "$1" >/dev/null 2>&1; }
 
-main() {
+install_pacman_packages() {
   if ! need_cmd pacman; then
-    warn "pacman introuvable — ce script est prévu pour Arch/Omarchy."
-    exit 1
+    warn "pacman introuvable — script prévu pour Arch/Omarchy."
+    return 1
   fi
 
-  # Liste de paquets (ajuste selon tes besoins)
-  PACKAGES=(
-    # navigateur + password manager
+  # Mets ici tes paquets officiels
+  local -a PACMAN_PACKAGES=(
+    git
+    base-devel
     firefox
-    #firefoxpwa
     bitwarden
-
-    # dev essentials
-    #ripgrep
-    #fd
-    #fzf
-
-    # utile terminal
     curl
     wget
     #unzip
     #zip
     #jq
 
-    # build tools (souvent nécessaires)
-    #base-devel
+    #ripgrep
+    #fd
+    #fzf
   )
 
-  info "Installing packages with pacman (${#PACKAGES[@]} packages)"
-  run sudo pacman -S --needed --noconfirm "${PACKAGES[@]}"
+  info "Installing pacman packages (${#PACMAN_PACKAGES[@]})"
+  run sudo pacman -S --needed --noconfirm "${PACMAN_PACKAGES[@]}"
+}
+
+install_yay() {
+  if need_cmd yay; then
+    info "yay already installed"
+    return 0
+  fi
+
+  info "Installing yay (AUR helper)"
+
+  # Prérequis (au cas où)
+  run sudo pacman -S --needed --noconfirm git base-devel
+
+  local tmpdir
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    tmpdir="/tmp/yay-build-DRYRUN"
+    info "DRY_RUN: would create temp dir ($tmpdir) and build yay"
+    return 0
+  fi
+
+  tmpdir="$(mktemp -d)"
+  trap 'rm -rf "$tmpdir"' EXIT
+
+  run git clone https://aur.archlinux.org/yay.git "$tmpdir/yay"
+
+  pushd "$tmpdir/yay" >/dev/null
+  # makepkg doit tourner en user (pas sudo)
+  makepkg -si --noconfirm --needed
+  popd >/dev/null
+
+  # cleanup via trap
+  trap - EXIT
+  rm -rf "$tmpdir"
+
+  info "yay installation complete"
+}
+
+install_yay_packages() {
+  if ! need_cmd yay; then
+    info "yay not installed -> skipping AUR packages"
+    return 0
+  fi
+
+  # Mets ici tes paquets AUR (optionnel)
+  local -a AUR_PACKAGES=(
+    lazysql-bin
+  )
+
+  if [[ "${#AUR_PACKAGES[@]}" -eq 0 ]]; then
+    info "No AUR packages configured"
+    return 0
+  fi
+
+  info "Installing AUR packages (${#AUR_PACKAGES[@]})"
+  run yay -S --needed --noconfirm "${AUR_PACKAGES[@]}"
+}
+
+main() {
+  install_pacman_packages
+  install_yay
+  install_yay_packages
   info "Done."
 }
 
 main "$@"
-

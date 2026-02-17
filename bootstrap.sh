@@ -340,6 +340,16 @@ EOF
 
 }
 
+#####################################
+# flush cache etc
+#####################################
+post_run() {
+  #rebuild bat cache in case theme has changed
+  if command -v bat >/dev/null 2>&1; then
+    run bat cache --build
+  fi
+}
+
 
 #####################################
 # Main
@@ -372,6 +382,8 @@ main() {
   detect_conflicts
   stow_packages
   ensure_ssh_local_config
+
+  post_run
 
   if [[ "$DRY_RUN" -eq 1 ]]; then
     success "Dry-run terminé ✅ (aucun changement effectué)"
