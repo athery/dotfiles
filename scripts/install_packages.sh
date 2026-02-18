@@ -33,13 +33,13 @@ install_pacman_packages() {
     bitwarden
     curl
     wget
-    #unzip
+    vivid
+    ripgrep
+    fd
+    fzf
     #zip
     #jq
-
-    #ripgrep
-    #fd
-    #fzf
+    #unzip
   )
 
   info "Installing pacman packages (${#PACMAN_PACKAGES[@]})"

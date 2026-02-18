@@ -12,6 +12,8 @@ fi
 
 #theming
 export BAT_THEME="Catppuccin Macchiato"
+export FZF_DEFAULT_OPTS="--color=bg:#24273a,fg:#cad3f5,hl:#ed8796,fg+:#cad3f5,bg+:#363a4f,prompt:#c6a0f6,pointer:#f5a97f,marker:#a6da95,info:#c6a0f6,spinner:#f4dbd6,header:#f4dbd6,border:#5b6078"
+export LS_COLORS="$(vivid generate catppuccin-macchiato)"
 
 # Add your own exports, aliases, and functions here.
 #
