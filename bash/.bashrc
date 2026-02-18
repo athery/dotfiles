@@ -43,6 +43,56 @@ copy() {
   fi
 }
 
+# safely deco external storage befor unplugging
+dc() {
+  # If an argument is provided, treat it as mountpoint. Otherwise pick via fzf.
+  local mount="${1:-}"
+
+  if [[ -z "$mount" ]]; then
+    if ! command -v fzf >/dev/null 2>&1; then
+      echo "fzf n'est pas installé. Installe-le (pacman -S fzf) ou passe un mountpoint en argument."
+      return 1
+    fi
+
+    local base="/run/media/$USER"
+    if [[ ! -d "$base" ]]; then
+      echo "Aucun dossier $base (udisks/automount actif ?)"
+      return 1
+    fi
+
+    mount="$(
+      find "$base" -mindepth 1 -maxdepth 1 -type d -print 2>/dev/null \
+        | sort \
+        | fzf --prompt="Disconnect drive > " --height=40% --reverse
+    )" || return 0
+  fi
+
+  # Resolve mountpoint to a block device (e.g. /dev/sdb1)
+  local dev
+  dev="$(findmnt -no SOURCE "$mount" 2>/dev/null)" || {
+    echo "Mountpoint introuvable ou non monté: $mount"
+    return 1
+  }
+
+  echo "Sync..."
+  sync
+
+  echo "Unmounting $dev..."
+  udisksctl unmount -b "$dev" || return 1
+
+  # Get parent disk (e.g. sdb from sdb1)
+  local pkname
+  pkname="$(lsblk -no PKNAME "$dev" 2>/dev/null)" || {
+    echo "Impossible de déterminer le disque parent pour $dev"
+    return 1
+  }
+
+  local disk="/dev/$pkname"
+  echo "Powering off $disk..."
+  udisksctl power-off -b "$disk"
+}
+
+
 alias paste="wl-paste"
 
 # git aliases
