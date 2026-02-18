@@ -340,6 +340,10 @@ EOF
 
 }
 
+setup_userland() {
+  "$DOTFILES_DIR/scripts/setup_userland.sh"
+}
+
 #####################################
 # flush cache etc
 #####################################
@@ -378,11 +382,10 @@ main() {
 
   discover_packages_if_empty
   validate_packages_exist
-
   detect_conflicts
   stow_packages
   ensure_ssh_local_config
-
+  setup_userland
   post_run
 
   if [[ "$DRY_RUN" -eq 1 ]]; then

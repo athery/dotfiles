@@ -24,9 +24,26 @@ alias vi="nvim"
 alias vim="nvim"
 alias ll="ls -al"
 # "de web www-data" par exemple
-function de() {
+de() {
   docker exec -ti -u "$2" "$1" bash
 }
+
+# copy myfile.txt or ls | copy
+copy() {
+  if [ -t 0 ]; then
+    # No stdin → expect a filename
+    if [ -z "$1" ]; then
+      echo "Usage: copy <file> OR pipe into copy"
+      return 1
+    fi
+    wl-copy < "$1"
+  else
+    # Data is being piped in
+    wl-copy
+  fi
+}
+
+alias paste="wl-paste"
 
 # git aliases
 [ -f /usr/share/bash-completion/completions/git ] && source /usr/share/bash-completion/completions/git

@@ -37,6 +37,8 @@ install_pacman_packages() {
     ripgrep
     fd
     fzf
+    udiskie
+    7zip
     #zip
     #jq
     #unzip
