@@ -92,6 +92,7 @@ install_yay_packages() {
   # Mets ici tes paquets AUR (optionnel)
   local -a AUR_PACKAGES=(
     lazysql-bin
+    rustdesk-bin
   )
 
   if [[ "${#AUR_PACKAGES[@]}" -eq 0 ]]; then
