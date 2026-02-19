@@ -1,0 +1,119 @@
+# ~/.gitconfig
+
+[user]
+    name = athery
+    email = adrien.thery@gmail.com
+
+[init]
+    defaultBranch = main
+
+[color]
+    ui = auto
+
+[core]
+    editor = nvim
+    pager = delta
+
+[delta]
+    # readability
+    line-numbers = true
+    navigate = true
+    side-by-side = false
+    syntax-theme = Catpuccin Macchiato
+    # Useful options for IA workflow, if needed
+    features = decorations
+    whitespace-error-style = 22 reverse
+
+[delta "decorations"]
+    commit-decoration-style = bold yellow box
+    file-style = bold yellow
+    file-decoration-style = yellow ul
+    hunk-header-style = syntax bold italic
+    hunk-header-decoration-style = cyan box
+
+[interactive]
+    diffFilter = delta --color-only
+
+[diff]
+    # better and more readable diff algorithms
+    algorithm = histogram
+    colorMoved = default
+    mnemonicPrefix = true
+
+[merge]
+    # prevents trivial conflicts
+    conflictstyle = zdiff3
+
+[rerere]
+    # reuse previous conflict resolutions
+    enabled = true
+    autoupdate = true
+
+[pull]
+    # prevent accidental merges when pulling
+    rebase = true
+
+[push]
+    autoSetupRemote = true
+
+[commit]
+    verbose = true
+
+[rebase]
+    autoStash = true
+    updateRefs = true
+
+[fetch]
+    prune = true
+    pruneTags = true
+
+[status]
+    short = true
+    branch = true
+
+[branch]
+    sort = -committerdate
+
+[tag]
+    sort = -taggerdate
+
+[log]
+    date = iso
+
+[alias]
+    # ---- navigation / status ----
+    st = status
+    br = branch
+    co = switch
+    cob = switch -c
+
+    # ---- diffs ----
+    d = diff
+    ds = diff --staged
+    dw = diff -w
+    dm = diff --color-moved
+    dh = diff --word-diff
+
+    # ---- logs / review ----
+    lg = log --oneline --decorate --graph --all
+    l = log --oneline --decorate -n 20
+    show = show
+
+    # ---- add interactive (IA-safe) ----
+    ap = add -p
+    aa = add -A
+
+    # ---- rebase interactive quick ----
+    ri = rebase -i
+
+    # ---- cleaning ----
+    pr = pull --rebase
+    fp = fetch --prune
+
+    # ---- commit helpers ----
+    cm = commit -m
+    ca = commit --amend
+
+[help]
+    autocorrect = 10
+

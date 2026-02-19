@@ -39,6 +39,7 @@ install_pacman_packages() {
     fzf
     udiskie
     7zip
+    git-delta
     #zip
     #jq
     #unzip

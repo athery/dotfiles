@@ -23,6 +23,7 @@ alias top="btop"
 alias vi="nvim"
 alias vim="nvim"
 alias ll="ls -al"
+alias paste="wl-paste"
 # "de web www-data" par exemple
 de() {
   docker exec -ti -u "$2" "$1" bash
@@ -93,26 +94,24 @@ dc() {
 }
 
 
-alias paste="wl-paste"
 
 # git aliases
-[ -f /usr/share/bash-completion/completions/git ] && source /usr/share/bash-completion/completions/git
-alias ga="git add"
-__git_complete ga _git_add
-alias gaa="git add -A"
-alias gb="git branch"
-alias gci="git commit"
-__git_complete gc _git_commit
-alias gc="git checkout"
-__git_complete gco _git_checkout
-alias gd="git -c diff.external=difft diff"
-alias gpl="git pull"
-__git_complete gm _git_pull
+
+alias g="git"
+alias gs="git st"
+alias gb="git br"
+alias gd="git d"
+alias gds="git ds"
+alias gaa="git aa"
+alias gap="git ap"
+alias gco="git co"
+alias gcob="git cob"
+alias gri="git ri"
+alias gcm="git cm"
+alias gca="git ca"
+alias gl="git pull"
 alias gp="git push"
-__git_complete gp _git_push
-alias gst="git status"
-__git_complete gs _git_status
-alias gl="git log"
-__git_complete gl _git_log
+alias gm="git merge"
+
 alias lg="lazygit"
 alias lz="lazygit"
