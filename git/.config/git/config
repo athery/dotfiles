@@ -1,8 +1,7 @@
 # ~/.gitconfig
 
-[user]
-    name = athery
-    email = adrien.thery@gmail.com
+[include]
+    path = ~/.gitconfig.local
 
 [init]
     defaultBranch = main
@@ -19,7 +18,7 @@
     line-numbers = true
     navigate = true
     side-by-side = false
-    syntax-theme = Catpuccin Macchiato
+    syntax-theme = Catppuccin Macchiato
     # Useful options for IA workflow, if needed
     features = decorations
     whitespace-error-style = 22 reverse
