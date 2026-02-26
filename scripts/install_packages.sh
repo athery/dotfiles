@@ -19,6 +19,41 @@ run() {
 
 need_cmd() { command -v "$1" >/dev/null 2>&1; }
 
+install_claude_code() {
+  # Déjà installé ?
+  if need_cmd claude || [[ -x "$HOME/.local/bin/claude" ]]; then
+    info "Claude Code already installed"
+    return 0
+  fi
+
+  info "Installing Claude Code"
+
+  # Bug vu chez toi : ~/.claude.json peut être un dossier root -> ça casse le setup
+  if [[ -d "$HOME/.claude.json" ]]; then
+    warn "~/.claude.json is a directory; removing it to avoid installer issues"
+    run sudo rm -rf "$HOME/.claude.json"
+  fi
+
+  # Installer (sans sudo)
+  if [[ "$DRY_RUN" -eq 1 ]]; then
+    info "DRY_RUN: would run: curl -fsSL https://claude.ai/install.sh | bash"
+    return 0
+  fi
+
+  run mkdir -p "$HOME/.local/bin"
+  curl -fsSL https://claude.ai/install.sh | bash
+
+  # Pour que ça marche tout de suite dans ce script (même si le PATH des dotfiles
+  # sera appliqué au prochain shell)
+  export PATH="$HOME/.local/bin:$PATH"
+
+  if need_cmd claude; then
+    info "Claude Code installed: $(claude --version 2>/dev/null || true)"
+  else
+    warn "Claude installed to ~/.local/bin but not in PATH for this session"
+  fi
+}
+
 install_pacman_packages() {
   if ! need_cmd pacman; then
     warn "pacman introuvable — script prévu pour Arch/Omarchy."
@@ -109,6 +144,7 @@ main() {
   install_pacman_packages
   install_yay
   install_yay_packages
+  install_claude_code
   info "Done."
 }
 

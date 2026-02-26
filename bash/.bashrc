@@ -93,7 +93,8 @@ dc() {
   udisksctl power-off -b "$disk"
 }
 
-
+# ~/.local/bin
+export PATH="$HOME/.local/bin:$PATH"
 
 # git aliases
 
